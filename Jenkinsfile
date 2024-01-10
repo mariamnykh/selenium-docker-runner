@@ -8,13 +8,18 @@ pipeline{
 	stages{
 		stage('Start Grid'){
             steps{
-                sh "docker-compose -f grid.yaml up --scale ${params.BROWSER}=2 -d"
+                sh "docker-compose -f grid.yaml up --scale ${params.BROWSER}=1 -d"
             }
         }
 
 	   stage('Run tests'){
 	      steps{
 	      	  sh "docker-compose -f test-suites.yaml up --pull=always"
+	      	  script {
+                    if(fileExists('output/flight-reservation/testng-failed.xml') || fileExists('output/vendor-portal/testng-failed.xml')){
+                        error('failed tests found')
+                    }
+                }
 	      }
 
 	   }
